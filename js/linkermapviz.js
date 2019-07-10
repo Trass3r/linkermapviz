@@ -34,18 +34,17 @@ export var parseSections = function(s)
 	//                0x0000000000905730                _dl_relocate_static_pie size 1
 	//.data           0x000000001fff871c      0x124 load address 0x0000000000003000
 	var sections = [];
-	var sectionre = /^(.+?|.{14,}\n)[ ]+0x([0-9a-f]+)[ ]+0x([0-9a-f]+)(?:[ ]+(.+))?\n/i;
-	var subsectionre = /^[ ]{16}0x([0-9a-f]+)[ ]+(.+)\n/i;
+	var sectionre = /^(.+?|.{14,}\r?\n)[ ]+0x([0-9a-f]+)[ ]+0x([0-9a-f]+)(?:[ ]+(.+))?\r?\n/i;
+	var subsectionre = /^[ ]{16}0x([0-9a-f]+)[ ]+(.+)\r?\n/i;
 	var pos = 0;
 	while (true)
 	{
 		var m = sectionre.exec(s);
 		if (!m)
 		{
-			var nextpos = s.indexOf('\n') + 1;
-			if (!nextpos)
+			var pos = s.indexOf('\n') + 1;
+			if (!pos)
 				break;
-			var pos = nextpos;
 			s = s.slice(pos);
 			continue;
 		}
