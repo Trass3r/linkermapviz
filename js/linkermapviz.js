@@ -1,8 +1,5 @@
-var re = {};
 import {__JsIterator__, __PyIterator__, __Terminal__, __add__, __and__, __call__, __class__, __envir__, __eq__, __floordiv__, __ge__, __get__, __getcm__, __getitem__, __getslice__, __getsm__, __gt__, __i__, __iadd__, __iand__, __idiv__, __ijsmod__, __ilshift__, __imatmul__, __imod__, __imul__, __in__, __init__, __ior__, __ipow__, __irshift__, __isub__, __ixor__, __jsUsePyNext__, __jsmod__, __k__, __kwargtrans__, __le__, __lshift__, __lt__, __matmul__, __mergefields__, __mergekwargtrans__, __mod__, __mul__, __ne__, __neg__, __nest__, __or__, __pow__, __pragma__, __proxy__, __pyUseJsNext__, __rshift__, __setitem__, __setproperty__, __setslice__, __sort__, __specialattrib__, __sub__, __super__, __t__, __terminal__, __truediv__, __withblock__, __xor__, dict, list, map, object, repr, set, sorted, sum, tuple} from './org.transcrypt.__runtime__.js';
 import {chain, groupby} from './itertools.js';
-import * as __module_re__ from './re.js';
-__nest__ (re, '', __module_re__);
 var __name__ = '__main__';
 import * as squarify from './squarify.js';
 export var Objectfile =  __class__('Objectfile', [object], {
@@ -37,12 +34,12 @@ export var parseSections = function(s)
 	//                0x0000000000905730                _dl_relocate_static_pie size 1
 	//.data           0x000000001fff871c      0x124 load address 0x0000000000003000
 	var sections = [];
-	var sectionre = re.compile ('(?P<section>.+?|.{14,}\n)[ ]+0x(?P<offset>[0-9a-f]+)[ ]+0x(?P<size>[0-9a-f]+)(?:[ ]+(?P<comment>.+))?\n+', re.I);
-	var subsectionre = re.compile ('[ ]{16}0x(?P<offset>[0-9a-f]+)[ ]+(?P<function>.+)\n+', re.I);
+	var sectionre = /^(.+?|.{14,}\n)[ ]+0x([0-9a-f]+)[ ]+0x([0-9a-f]+)(?:[ ]+(.+))?\n/i;
+	var subsectionre = /^[ ]{16}0x([0-9a-f]+)[ ]+(.+)\n/i;
 	var pos = 0;
 	while (true)
 	{
-		var m = sectionre.match (s);
+		var m = sectionre.exec(s);
 		if (!m)
 		{
 			var nextpos = s.indexOf('\n') + 1;
@@ -52,15 +49,16 @@ export var parseSections = function(s)
 			s = s.slice(pos);
 			continue;
 		}
-		var pos = m.end ();
-		s = s.slice(pos);
-		var section = m.group ('section');
-		var v = m.group ('offset');
+		// advance
+		s = s.slice(m.index + m[0].length);
+
+		var section = m[1];
+		var v = m[2];
 		var offset = (v !== null ? parseInt(v, 16) : null);
-		var v = m.group ('size');
+		var v = m[3];
 		var size = (v !== null ? parseInt(v, 16) : null);
-		var comment = m.group ('comment');
-		if (section == '*default*' || size <= 0)
+		var comment = m[4];
+		if (size <= 0)
 			continue;
 
 		var obj = Objectfile(section, offset, size, comment);
@@ -69,21 +67,18 @@ export var parseSections = function(s)
 			sections.append(obj);
 			continue;
 		}
-
 		sections[sections.length-1].children.append(obj);
 		while (true)
 		{
-			var m = subsectionre.match(s);
+			var m = subsectionre.exec(s);
 			if (!m)
 				break;
 
-			var pos = m.end();
-			s = s.slice(pos);
-			var __left0__ = m.groups();
-			var offset = __left0__ [0];
-			var function_ = __left0__ [1];
-			var offset = parseInt(offset, 16);
-			obj.children.append(tuple([offset, function_]));
+			s = s.slice(m.index + m[0].length);
+
+			var func = m[2];
+			var offset = parseInt(m[1], 16);
+			obj.children.append(tuple([offset, func]));
 		}
 	}
 	return sections;
