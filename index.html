@@ -139,7 +139,7 @@ import * as linkermapviz from './js/linkermapviz.js';
 			var reader = new FileReader();
 			reader.onload = function(progressEvent)
 			{
-				var idx = this.result.search('Memory Configuration');
+				var idx = this.result.search('LOAD ');
 				if (idx < 0)
 					return;
 				try {
