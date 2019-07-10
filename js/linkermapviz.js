@@ -76,6 +76,14 @@ export var parseSections = function(s)
 			s = s.slice(m.index + m[0].length);
 
 			var func = m[2];
+			// entries like . = ALIGN(4) or __bss_start__ = .
+			if (func.includes(' = ')) // TODO: . is in many identifiers, = is in operator+= etc.
+			{
+				console.log('skipped bogus entry ');
+				console.log(func);
+				continue;
+			}
+
 			var offset = parseInt(m[1], 16);
 			obj.children.append(tuple([offset, func]));
 		}
