@@ -23,14 +23,28 @@ export var Objectfile =  __class__('Objectfile', [object], {
 		return '<Objectfile {} {:x} {:x} {} {}>'.format(self.section, self.offset, self.size, self.path, repr(self.children));
 	});}
 });
-export var parseSections = function (s) {
+export var parseSections = function(s)
+{
+	// these are the cases:
+
+	//.text           0x00000000005e2180  0x186dc11
+	// .text.unlikely
+	//                0x00000000005e2180      0x194 fo/lang.o
+	// *fill*         0x00000000009056fe        0x2 
+	// TODO: do we want fill? then adjust last part of regex
+	// .text          0x0000000000905700       0x31 crt1.o
+	//                0x0000000000905700                _start
+	//                0x0000000000905730                _dl_relocate_static_pie size 1
+	//.data           0x000000001fff871c      0x124 load address 0x0000000000003000
 	var sections = [];
 	var sectionre = re.compile ('(?P<section>.+?|.{14,}\n)[ ]+0x(?P<offset>[0-9a-f]+)[ ]+0x(?P<size>[0-9a-f]+)(?:[ ]+(?P<comment>.+))?\n+', re.I);
 	var subsectionre = re.compile ('[ ]{16}0x(?P<offset>[0-9a-f]+)[ ]+(?P<function>.+)\n+', re.I);
 	var pos = 0;
-	while (true) {
+	while (true)
+	{
 		var m = sectionre.match (s);
-		if (!(m)) {
+		if (!m)
+		{
 			var nextpos = s.indexOf('\n') + 1;
 			if (!nextpos)
 				break;
@@ -48,25 +62,28 @@ export var parseSections = function (s) {
 		var comment = m.group ('comment');
 		if (section == '*default*' || size <= 0)
 			continue;
-		var of = Objectfile (section, offset, size, comment);
-		if (section.startswith (' ')) {
-			sections[sections.length-1].children.append (of);
-			while (true) {
-				var m = subsectionre.match (s);
-				if (!(m)) {
-					break;
-				}
-				var pos = m.end ();
-				s = s.slice(pos);
-				var __left0__ = m.groups ();
-				var offset = __left0__ [0];
-				var function_ = __left0__ [1];
-				var offset = parseInt(offset, 16);
-				of.children.append(tuple([offset, function_]));
-			}
+
+		var obj = Objectfile(section, offset, size, comment);
+		if (!section.startswith(' '))
+		{
+			sections.append(obj);
+			continue;
 		}
-		else {
-			sections.append (of);
+
+		sections[sections.length-1].children.append(obj);
+		while (true)
+		{
+			var m = subsectionre.match(s);
+			if (!m)
+				break;
+
+			var pos = m.end();
+			s = s.slice(pos);
+			var __left0__ = m.groups();
+			var offset = __left0__ [0];
+			var function_ = __left0__ [1];
+			var offset = parseInt(offset, 16);
+			obj.children.append(tuple([offset, function_]));
 		}
 	}
 	return sections;
