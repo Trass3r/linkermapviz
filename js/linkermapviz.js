@@ -196,5 +196,7 @@ export var main = function(fd)
 	}
 	//	plt.show(plt.column([plots], {sizing_mode: "scale_width"}));
 	const container = document.getElementById('plot');
+	while (container.lastChild)
+		container.removeChild(container.lastChild);
 	plt.show(plots, container);
 };
