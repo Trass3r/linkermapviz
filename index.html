@@ -137,13 +137,13 @@ import * as linkermapviz from './js/linkermapviz.js';
 
 			var file = droppedFiles[0];
 			var reader = new FileReader();
-			reader.onload = function(progressEvent)
+			reader.onload = async function(progressEvent)
 			{
 				var idx = this.result.search('LOAD ');
 				if (idx < 0)
 					return;
 				try {
-					linkermapviz.main(this.result.substr(idx));
+					await linkermapviz.main(this.result.substr(idx));
 					form.classList.add('is-success');
 				}
 				catch(err) {

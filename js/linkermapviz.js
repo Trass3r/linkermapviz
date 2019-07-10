@@ -91,7 +91,7 @@ export var parseSections = function(s)
 	return sections;
 };
 var plt = Bokeh.Plotting;
-export var main = function(fd)
+export var main = async function(fd)
 {
 	const sections = parseSections(fd);
 	const importantSections = ['.text', '.data', '.bss', '.rodata'];
@@ -223,5 +223,6 @@ export var main = function(fd)
 	const container = document.getElementById('plot');
 	while (container.lastChild)
 		container.removeChild(container.lastChild);
-	plt.show(plots, container);
+
+	await plt.show(plots, container);
 };
