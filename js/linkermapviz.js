@@ -93,18 +93,24 @@ export var parseSections = function(s)
 var plt = Bokeh.Plotting;
 export var main = function(fd)
 {
-	var sections = parseSections(fd);
-	var importantSections = new set(['.text', '.data', '.bss', '.rodata']);
+	const sections = parseSections(fd);
+	const importantSections = ['.text', '.data', '.bss', '.rodata'];
 	var plots = [];
 //	var whitelistedSections = list(filter((function __lambda__(x) {
 //		return __in__(x.section, importantSections);
 //	}), sections));
 
 	// first show the important sections, then the rest sorted by size
-	// whitelistedSections = sorted(sections, key = lambda x:(x.section in importantSections, x.size), reverse=True)
-	var whitelistedSections = sorted(sections, __kwargtrans__({key: (function __lambda__(x) {
-		return tuple([__in__(x.section, importantSections), x.size]);
-	}), reverse: true}));
+	const whitelistedSections = sections.sort((a, b) => {
+		const ai = importantSections.includes(a.section);
+		const bi = importantSections.includes(b.section);
+		if (ai == bi)
+			return b.size - a.size; // by size descending
+		if (ai)
+			return -1; // a first
+		return 1;
+	});
+
 	var allObjects = list(chain(...map((function __lambda__(x) {
 		return x.children;
 	}), whitelistedSections)));
