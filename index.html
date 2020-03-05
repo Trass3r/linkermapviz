@@ -13,31 +13,18 @@
 </head>
 <body>
 	<div class="container" role="main">
-		<h1><a href="/article-url"></a></h1>
-	
-		<nav role="navigation">
-			<a href="" class="is-selected">Auto Submit</a>
-			<a href="?submit-on-demand">Submit On Demand</a>
-		</nav>
-	
-		<form method="post" action="/?" enctype="multipart/form-data" novalidate class="box">
+		<form method="post" enctype="multipart/form-data" novalidate class="box has-advanced-upload">
 			<div class="box__input">
-				<svg class="box__icon" xmlns="http://www.w3.org/2000/svg" width="50" height="43" viewBox="0 0 50 43"><path d="M48.4 26.5c-.9 0-1.7.7-1.7 1.7v11.6h-43.3v-11.6c0-.9-.7-1.7-1.7-1.7s-1.7.7-1.7 1.7v13.2c0 .9.7 1.7 1.7 1.7h46.7c.9 0 1.7-.7 1.7-1.7v-13.2c0-1-.7-1.7-1.7-1.7zm-24.5 6.1c.3.3.8.5 1.2.5.4 0 .9-.2 1.2-.5l10-11.6c.7-.7.7-1.7 0-2.4s-1.7-.7-2.4 0l-7.1 8.3v-25.3c0-.9-.7-1.7-1.7-1.7s-1.7.7-1.7 1.7v25.3l-7.1-8.3c-.7-.7-1.7-.7-2.4 0s-.7 1.7 0 2.4l10 11.6z"/></svg>
-				<input type="file" name="files[]" id="file" class="box__file" data-multiple-caption="{count} files selected" multiple />
+				<svg class="box__icon" xmlns="http://www.w3.org/2000/svg" width="50" height="43" viewBox="0 0 50 43" caption="icon was borrowed from http://www.flaticon.com/free-icon/outbox_3686"><path d="M48.4 26.5c-.9 0-1.7.7-1.7 1.7v11.6h-43.3v-11.6c0-.9-.7-1.7-1.7-1.7s-1.7.7-1.7 1.7v13.2c0 .9.7 1.7 1.7 1.7h46.7c.9 0 1.7-.7 1.7-1.7v-13.2c0-1-.7-1.7-1.7-1.7zm-24.5 6.1c.3.3.8.5 1.2.5.4 0 .9-.2 1.2-.5l10-11.6c.7-.7.7-1.7 0-2.4s-1.7-.7-2.4 0l-7.1 8.3v-25.3c0-.9-.7-1.7-1.7-1.7s-1.7.7-1.7 1.7v25.3l-7.1-8.3c-.7-.7-1.7-.7-2.4 0s-.7 1.7 0 2.4l10 11.6z"/></svg>
+				<input type="file" accept=".map" name="files[]" id="file" class="box__file" data-multiple-caption="{count} files selected" />
 				<label for="file"><strong>Choose a file</strong><span class="box__dragndrop"> or drag it here</span>.</label>
 				<button type="submit" class="box__button">Upload</button>
 			</div>
 	
-			
 			<div class="box__uploading">Uploading&hellip;</div>
-			<div class="box__success">Done! <a href="/?" class="box__restart" role="button">Upload more?</a></div>
-			<div class="box__error">Error! <span></span>. <a href="/?" class="box__restart" role="button">Try again!</a></div>
-		</form>
-	
-		<footer>
-			<p><strong>Be sure to try the demo on a browser (e.g. IE 9 and below) that does not support drag&amp;drop file upload. You can also try with a JavaScript support disabled.</strong></p>
-			<p>The icon was borrowed from <a href="http://www.flaticon.com/free-icon/outbox_3686" target="_blank">FlatIcon</a>.</p>
-		</footer>
+			<div class="box__success">Done! <a href="." class="box__restart" role="button">Upload more?</a></div>
+			<div class="box__error">Error! <span></span>. <a href="." class="box__restart" role="button">Try again!</a></div>
+		</form>	
 	</div>
 	<div id="plot">
 	</div>
@@ -48,130 +35,121 @@ import * as linkermapviz from './js/linkermapviz.js';
 ;(function(document, window, index)
 {
 	// applying the effect for every form
-	var forms = document.querySelectorAll('.box');
-	Array.prototype.forEach.call(forms, function(form)
+	var form = document.querySelector('.box');
+
+	var input        = form.querySelector('input[type="file"]');
+	var label        = form.querySelector('label');
+	var errorMsg     = form.querySelector('.box__error span');
+	var restart      = form.querySelectorAll('.box__restart');
+	var droppedFiles = false;
+	var showFiles    = function(files)
 	{
-		var input        = form.querySelector('input[type="file"]');
-		var label        = form.querySelector('label');
-		var errorMsg     = form.querySelector('.box__error span');
-		var restart      = form.querySelectorAll('.box__restart');
-		var droppedFiles = false;
-		var showFiles    = function(files)
-		{
-			label.textContent = files.length > 1
-				? (input.getAttribute('data-multiple-caption') || '').replace('{count}', files.length)
-				: files[0].name;
-		};
-		var triggerFormSubmit = function()
-		{
-			var event = new Event('submit');
-			form.dispatchEvent(event);
-		};
+		label.textContent = files.length > 1
+			? (input.getAttribute('data-multiple-caption') || '').replace('{count}', files.length)
+			: files[0].name;
+	};
+	var triggerFormSubmit = function()
+	{
+		var event = new Event('submit');
+		form.dispatchEvent(event);
+	};
 
-		// letting the server side to know we are going to make an Ajax request
-		var ajaxFlag = document.createElement('input');
-		ajaxFlag.setAttribute('type', 'hidden');
-		ajaxFlag.setAttribute('name', 'ajax');
-		ajaxFlag.setAttribute('value', 1);
-		form.appendChild(ajaxFlag);
+	// letting the server side to know we are going to make an Ajax request
+	var ajaxFlag = document.createElement('input');
+	ajaxFlag.setAttribute('type', 'hidden');
+	ajaxFlag.setAttribute('name', 'ajax');
+	ajaxFlag.setAttribute('value', 1);
+	form.appendChild(ajaxFlag);
 
-		// automatically submit the form on file select
-		input.addEventListener('change', function(e)
-		{
-			showFiles(e.target.files);
-			triggerFormSubmit();
-		});
+	// automatically submit the form on file select
+	input.addEventListener('change', function(e)
+	{
+		showFiles(e.target.files);
+		//triggerFormSubmit();
+	});
 
-		form.classList.add('has-advanced-upload'); // letting the CSS part to know drag&drop is supported by the browser
-
-		['drag', 'dragstart', 'dragend', 'dragover', 'dragenter', 'dragleave', 'drop'].forEach(function(event)
+	['drag', 'dragstart', 'dragend', 'dragover', 'dragenter', 'dragleave', 'drop'].forEach(function(event)
+	{
+		form.addEventListener(event, function(e)
 		{
-			form.addEventListener(event, function(e)
-			{
-				// preventing the unwanted behaviours
-				e.preventDefault();
-				e.stopPropagation();
-			});
-		});
-		['dragover', 'dragenter'].forEach(function(event)
-		{
-			form.addEventListener(event, function()
-			{
-				form.classList.add('is-dragover');
-			});
-		});
-		['dragleave', 'dragend', 'drop'].forEach(function(event)
-		{
-			form.addEventListener(event, function()
-			{
-				form.classList.remove('is-dragover');
-			});
-		});
-		form.addEventListener('drop', function(e)
-		{
-			droppedFiles = e.dataTransfer.files; // the files that were dropped
-			showFiles(droppedFiles);
-			triggerFormSubmit();
-		});
-
-		form.addEventListener('submit', function(e)
-		{
-			// preventing duplicate submissions
-			if (form.classList.contains('in-progress'))
-				return false;
-
-			form.classList.add('in-progress');
-			form.classList.remove('is-error');
-
+			// preventing the unwanted behaviours
 			e.preventDefault();
-
-			// gathering the form data
-			var ajaxData = new FormData(form);
-			if (droppedFiles)
-			{
-				Array.prototype.forEach.call(droppedFiles, function(file)
-				{
-					ajaxData.append(input.getAttribute('name'), file);
-				});
-			}
-
-			var file = droppedFiles[0];
-			var reader = new FileReader();
-			reader.onload = async function(progressEvent)
-			{
-				var idx = this.result.search('LOAD ');
-				if (idx < 0)
-					return;
-				try {
-					await linkermapviz.main(this.result.substr(idx));
-					form.classList.add('is-success');
-				}
-				catch(err) {
-					form.classList.add('is-error');
-					errorMsg.textContent = err.message;
-				}
-				finally {
-					form.classList.remove('in-progress');
-				}
-			};
-			reader.readAsText(file);
+			e.stopPropagation();
 		});
-
-		// restart the form if has a state of error/success
-		Array.prototype.forEach.call(restart, function(entry)
+	});
+	['dragover', 'dragenter'].forEach(function(event)
+	{
+		form.addEventListener(event, function()
 		{
-			entry.addEventListener('click', function(e)
-			{
-				e.preventDefault();
-				form.classList.remove('is-error', 'is-success');
-				input.click();
-			});
+			form.classList.add('is-dragover');
 		});
+	});
+	['dragleave', 'dragend', 'drop'].forEach(function(event)
+	{
+		form.addEventListener(event, function()
+		{
+			form.classList.remove('is-dragover');
+		});
+	});
+	var processFile = function(file)
+	{
+		var reader = new FileReader();
+		reader.onload = async function(progressEvent)
+		{
+			try {
+				await linkermapviz.main(this.result);
+				form.classList.add('is-success');
+			}
+			catch(err) {
+				form.classList.add('is-error');
+				errorMsg.textContent = err.message;
+			}
+			finally {
+				form.classList.remove('in-progress');
+			}
+		};
+		reader.readAsText(file);
+	};
 
-		//var event = new CustomEvent('drop', { dataTransfer : { files : [new File()] } });
-		//form.dispatchEvent(event);
+	form.addEventListener('drop', function(e)
+	{
+		droppedFiles = e.dataTransfer.files; // the files that were dropped
+		showFiles(droppedFiles);
+		var file = droppedFiles[0];
+		processFile(file);
+		//triggerFormSubmit();
+	});
 
-		var file = new File([`.text           0x00000000005e2180  0x186dc11
+	form.addEventListener('submit', function(e)
+	{
+		// preventing duplicate submissions
+		if (form.classList.contains('in-progress'))
+			return false;
+
+		form.classList.add('in-progress');
+		form.classList.remove('is-error');
+
+		e.preventDefault();
+
+		var file = droppedFiles[0];
+		processFile(file);
+	});
+
+	// restart the form if has a state of error/success
+	Array.prototype.forEach.call(restart, function(entry)
+	{
+		entry.addEventListener('click', function(e)
+		{
+			e.preventDefault();
+			form.classList.remove('is-error', 'is-success');
+			input.click();
+		});
+	});
+
+	//var event = new CustomEvent('drop', { dataTransfer : { files : [new File()] } });
+	//form.dispatchEvent(event);
+
+	var file = new File([`.text           0x00000000005e2180  0x186dc11
  *(.text.unlikely .text.*_unlikely .text.unlikely.*)
  .text.unlikely
                 0x00000000005e2180      0x194 cp/cp-lang.o
@@ -211,20 +189,27 @@ import * as linkermapviz from './js/linkermapviz.js';
  *(SORT_BY_NAME(.init_array.*))
  *(.init_array)
  .init_array    0x000017f8        0x4 crtbegin.o
-				0x000017fc                __init_array_end = .
+                0x000017fc                __init_array_end = .
 `], "foo.txt", {
 			type: "text/plain",
 		});
-		var reader = new FileReader();
-		reader.onload = function(progressEvent){
-			linkermapviz.main(this.result);
-		};
-		reader.readAsText(file);
-
-		// Firefox focus bug fix for file input
-		input.addEventListener('focus', function(){ input.classList.add('has-focus'); });
-		input.addEventListener('blur', function(){ input.classList.remove('has-focus'); });
+		var file2 = new File([`.text           0x00000000005e2180  0x186dc11
+.fini           0x0000000001e4fd94        0x9
+.rodata         0x0000000001e50000   0x83ca50
+.eh_frame       0x00000000026f12e8   0x24d4c8
+.tdata          0x00000000029404f0       0xe0
+.data           0x0000000002942060     0xc488
+.bss            0x000000000294e500   0x15a180
+`], "foo.txt", {
+		type: "text/plain",
 	});
+	/*
+	var reader = new FileReader();
+	reader.onload = function(progressEvent){
+		linkermapviz.main(this.result);
+	};
+	reader.readAsText(file);
+	*/
 }(document, window, 0));
 	</script>
 </body>

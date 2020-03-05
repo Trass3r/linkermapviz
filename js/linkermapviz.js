@@ -93,6 +93,9 @@ export var parseSections = function(s)
 var plt = Bokeh.Plotting;
 export var main = async function(fd)
 {
+	var idx = fd.search('LOAD ');
+	if (idx >= 0)
+		fd = fd.substr(idx);
 	const sections = parseSections(fd);
 	const importantSections = ['.text', '.data', '.bss', '.rodata'];
 	var plots = [];
